@@ -22,6 +22,11 @@
 #![cfg_attr(feature="clippy", plugin(clippy))]
 #![cfg_attr(feature="clippy", warn(clippy))]
 
+#![cfg_attr(feature="valgrind", feature(alloc_system))]
+
+#[cfg(feature="valgrind")]
+extern crate alloc_system;
+
 extern crate hazard;
 
 use std::error;
