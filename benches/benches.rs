@@ -18,6 +18,8 @@ extern crate crtq;
 
 use crtq::{Consumer, Producer};
 
+use queuecheck::{Data, Latency};
+
 const RUNS: usize = 5;
 const WARMUP: usize = 1_000_000;
 const MEASUREMENT: usize = 100_000_000;
@@ -32,7 +34,7 @@ fn thousands(ops: f64) -> String {
     string
 }
 
-fn run() -> f64 {
+fn throughput() -> f64 {
     let (producer, consumer) = crtq::channel(0, 0);
     queuecheck_bench_throughput!(
         (WARMUP, MEASUREMENT),
@@ -43,9 +45,33 @@ fn run() -> f64 {
     )
 }
 
+fn latency() -> Latency {
+    let (producer, consumer) = crtq::channel(0, 0);
+    queuecheck_bench_latency!(
+        (WARMUP, MEASUREMENT),
+        vec![producer],
+        vec![consumer],
+        |p: &Producer<i32>, i: i32| p.produce(i).unwrap(),
+        |c: &Consumer<i32>| c.consume().ok()
+    )
+}
+
+fn print_latencies(name: &str, data: &Data) {
+    println!("  {}", name);
+    for p in [50.0, 70.0, 90.0, 95.0, 99.0, 99.9, 99.99, 99.999, 99.9999, 99.99999].iter() {
+        let name = format!("{}%:", p);
+        println!("    {:<10} {}ns", name, thousands(data.percentile(*p)));
+    }
+}
+
 fn main() {
-    println!("bench crtq ...");
-    let mut runs = (0..RUNS).map(|_| run()).collect::<Vec<_>>();
+    println!("bench throughput_crtq ...");
+    let mut runs = (0..RUNS).map(|_| throughput()).collect::<Vec<_>>();
     runs.sort_by(|a, b| a.partial_cmp(b).unwrap());
     println!("  {} operations/second", thousands(runs[RUNS / 2]));
+
+    println!("bench latency_crtq ...");
+    let latency = latency();
+    print_latencies("consume", &latency.consume);
+    print_latencies("produce", &latency.produce);
 }
