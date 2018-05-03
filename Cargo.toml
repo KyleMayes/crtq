@@ -10,7 +10,7 @@ license = "Apache-2.0"
 
 description = "A MPMC wait-free queue."
 
-documentation = "https://kylemayes.github.io/crtq/crtq"
+documentation = "https://docs.rs/crtq"
 repository = "https://github.com/KyleMayes/crtq"
 
 [features]
