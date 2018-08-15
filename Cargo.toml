@@ -13,6 +13,8 @@ description = "A MPMC wait-free queue."
 documentation = "https://docs.rs/crtq"
 repository = "https://github.com/KyleMayes/crtq"
 
+keywords = ["queue", "unbounded", "mpmc", "lock-free", "wait-free"]
+
 [features]
 
 valgrind = []
