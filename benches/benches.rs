@@ -18,11 +18,12 @@ extern crate crtq;
 
 use crtq::{Consumer, Producer};
 
-use queuecheck::{Data, Latency};
+use queuecheck::{Latency};
 
 const RUNS: usize = 5;
 const WARMUP: usize = 1_000_000;
 const MEASUREMENT: usize = 100_000_000;
+const RANKS: &[f64] = &[50.0, 70.0, 90.0, 95.0, 99.0, 99.9, 99.99, 99.999, 99.9999, 99.99999];
 
 fn thousands(ops: f64) -> String {
     let mut string = format!("{:.2}", ops);
@@ -56,22 +57,11 @@ fn latency() -> Latency {
     )
 }
 
-fn print_latencies(name: &str, data: &Data) {
-    println!("  {}", name);
-    for p in [50.0, 70.0, 90.0, 95.0, 99.0, 99.9, 99.99, 99.999, 99.9999, 99.99999].iter() {
-        let name = format!("{}%:", p);
-        println!("    {:<10} {}ns", name, thousands(data.percentile(*p)));
-    }
-}
-
 fn main() {
-    println!("bench throughput_crtq ...");
+    println!("throughput_crtq");
     let mut runs = (0..RUNS).map(|_| throughput()).collect::<Vec<_>>();
     runs.sort_by(|a, b| a.partial_cmp(b).unwrap());
-    println!("  {} operations/second", thousands(runs[RUNS / 2]));
-
-    println!("bench latency_crtq ...");
-    let latency = latency();
-    print_latencies("consume", &latency.consume);
-    print_latencies("produce", &latency.produce);
+    println!("  {} operations/second\n", thousands(runs[RUNS / 2]));
+    latency().report("latency_crtq", RANKS);
+    println!();
 }
